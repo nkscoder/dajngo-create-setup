@@ -1,109 +1,31 @@
-import os
-import sys
-from distutils.sysconfig import get_python_lib
+# -*- coding: utf-8 -*-
+from distutils.core import setup
+from setuptools import find_packages
 
-from setuptools import find_packages, setup
+with open('README.rst') as readme:
+    long_description = readme.read()
 
-CURRENT_PYTHON = sys.version_info[:2]
-REQUIRED_PYTHON = (3, 5)
-
-
-if CURRENT_PYTHON < REQUIRED_PYTHON:
-    sys.stderr.write("""
-==========================
-Unsupported Python version
-==========================
-This version of Django requires Python {}.{}, but you're trying to
-install it on Python {}.{}.
-This may be because you are using a version of pip that doesn't
-understand the python_requires classifier. Make sure you
-have pip >= 9.0 and setuptools >= 24.2, then try again:
-    $ python -m pip install --upgrade pip setuptools
-    $ python -m pip install django
-This will install the latest version of Django which works on your
-version of Python. If you can't upgrade your pip (or Python), request
-an older version of Django:
-    $ python -m pip install "django<2"
-""".format(*(REQUIRED_PYTHON + CURRENT_PYTHON)))
-    sys.exit(1)
-
-
-overlay_warning = False
-if "install" in sys.argv:
-    lib_paths = [get_python_lib()]
-    if lib_paths[0].startswith("/usr/lib/"):
-
-        lib_paths.append(get_python_lib(prefix="/usr/local"))
-    for lib_path in lib_paths:
-        existing_path = os.path.abspath(os.path.join(lib_path, "django"))
-        if os.path.exists(existing_path):
-
-            overlay_warning = True
-            break
-
-
-EXCLUDE_FROM_PACKAGES = ['django.conf.project_template',
-                         'django.conf.app_template',
-                         'django.bin']
-
-
-version = __import__('django').get_version()
-
+with open('requirements.txt') as reqs:
+    install_requires = [
+        line for line in reqs.read().split('\n') if (line and not
+                                                     line.startswith('--'))
+    ]
 
 setup(
-    name='Django',
-    version=version,
-    python_requires='>={}.{}'.format(*REQUIRED_PYTHON),
-    url='https://www.djangoproject.com/',
+    name='django-create-setup',
+    version=__import__('django-create-setup').__version__,
     author='Nitesh',
     author_email='nkscoder@gmail.com',
-    description=('A high-level Python Web framework that encourages '
-                 'rapid development and clean, pragmatic design.'),
-    license='BSD',
-    packages=find_packages(exclude=EXCLUDE_FROM_PACKAGES),
+    packages=find_packages(),
     include_package_data=True,
-    scripts=['django/bin/django-admin.py'],
-    entry_points={'console_scripts': [
-        'django-admin = django.core.management:execute_from_command_line',
-    ]},
-    install_requires=['pytz'],
-    extras_require={
-        "bcrypt": ["bcrypt"],
-        "argon2": ["argon2-cffi >= 16.1.0"],
-    },
-    zip_safe=False,
+    url='https://github.com/nkscoder/django-create-setup',
+    license='BSD',
+    description=' Package description',
+    long_description=long_description,
     classifiers=[
-        'Development Status :: 2 - Pre-Alpha',
         'Environment :: Web Environment',
         'Framework :: Django',
-        'Intended Audience :: Developers',
-        'License :: OSI Approved :: BSD License',
-        'Operating System :: OS Independent',
-        'Programming Language :: Python',
-        'Programming Language :: Python :: 3',
-        'Programming Language :: Python :: 3.5',
-        'Programming Language :: Python :: 3.6',
-        'Programming Language :: Python :: 3 :: Only',
-        'Topic :: Internet :: WWW/HTTP',
-        'Topic :: Internet :: WWW/HTTP :: Dynamic Content',
-        'Topic :: Internet :: WWW/HTTP :: WSGI',
-        'Topic :: Software Development :: Libraries :: Application Frameworks',
-        'Topic :: Software Development :: Libraries :: Python Modules',
     ],
+    zip_safe=False,
+    install_requires=install_requires,
 )
-
-
-if overlay_warning:
-    sys.stderr.write("""
-========
-WARNING!
-========
-You have just installed Django over top of an existing
-installation, without removing it first. Because of this,
-your install may now include extraneous files from a
-previous version that have since been removed from
-Django. This is known to cause a variety of problems. You
-should manually remove the
-%(existing_path)s
-directory and re-install Django.
-""" % {"existing_path": existing_path})
